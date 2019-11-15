@@ -5,8 +5,9 @@
 .dc-chart rect.bar {
   stroke: none;
   cursor: pointer; }
-  .dc-chart rect.bar:hover {
-    fill-opacity: .5; }
+
+.dc-chart rect.bar:hover {
+  fill-opacity: .5; }
 
 .dc-chart rect.deselected {
   stroke: none;
@@ -16,10 +17,12 @@
   fill: #fff;
   font-size: 12px;
   cursor: pointer; }
-  .dc-chart .pie-slice.external {
-    fill: #000; }
-  .dc-chart .pie-slice :hover, .dc-chart .pie-slice.highlight {
-    fill-opacity: .8; }
+
+.dc-chart .pie-slice.external {
+  fill: #000; }
+
+.dc-chart .pie-slice :hover, .dc-chart .pie-slice.highlight {
+  fill-opacity: .8; }
 
 .dc-chart .pie-path {
   fill: none;
@@ -74,10 +77,12 @@
 
 .dc-chart g.state {
   cursor: pointer; }
-  .dc-chart g.state :hover {
-    fill-opacity: .8; }
-  .dc-chart g.state path {
-    stroke: #fff; }
+
+.dc-chart g.state :hover {
+  fill-opacity: .8; }
+
+.dc-chart g.state path {
+  stroke: #fff; }
 
 .dc-chart g.deselected path {
   fill: #808080; }
@@ -88,8 +93,9 @@
 .dc-chart g.row rect {
   fill-opacity: 0.8;
   cursor: pointer; }
-  .dc-chart g.row rect:hover {
-    fill-opacity: 0.6; }
+
+.dc-chart g.row rect:hover {
+  fill-opacity: 0.6; }
 
 .dc-chart g.row text {
   fill: #fff;
@@ -121,8 +127,9 @@
 .dc-chart .node {
   font-size: 0.7em;
   cursor: pointer; }
-  .dc-chart .node :hover {
-    fill-opacity: .8; }
+
+.dc-chart .node :hover {
+  fill-opacity: .8; }
 
 .dc-chart .bubble {
   stroke: none;
@@ -170,8 +177,9 @@
 
 .dc-chart .box.deselected {
   opacity: 0.5; }
-  .dc-chart .box.deselected .box {
-    fill: #ccc; }
+
+.dc-chart .box.deselected .box {
+  fill: #ccc; }
 
 .dc-chart .symbol {
   stroke: none; }
@@ -187,22 +195,25 @@
 
 .dc-chart .empty-chart .pie-slice {
   cursor: default; }
-  .dc-chart .empty-chart .pie-slice path {
-    fill: #fee;
-    cursor: default; }
+
+.dc-chart .empty-chart .pie-slice path {
+  fill: #fee;
+  cursor: default; }
 
 .dc-data-count {
   float: right;
   margin-top: 15px;
   margin-right: 15px; }
-  .dc-data-count .filter-count, .dc-data-count .total-count {
-    color: #3182bd;
-    font-weight: bold; }
+
+.dc-data-count .filter-count, .dc-data-count .total-count {
+  color: #3182bd;
+  font-weight: bold; }
 
 .dc-legend {
   font-size: 11px; }
-  .dc-legend .dc-legend-item {
-    cursor: pointer; }
+
+.dc-legend .dc-legend-item {
+  cursor: pointer; }
 
 .dc-hard .number-display {
   float: none; }
@@ -213,34 +224,40 @@ div.dc-html-legend {
   height: inherit;
   float: right;
   padding-right: 2px; }
-  div.dc-html-legend .dc-legend-item-horizontal {
-    display: inline-block;
-    margin-left: 5px;
-    margin-right: 5px;
-    cursor: pointer; }
-    div.dc-html-legend .dc-legend-item-horizontal.selected {
-      background-color: #3182bd;
-      color: white; }
-  div.dc-html-legend .dc-legend-item-vertical {
-    display: block;
-    margin-top: 5px;
-    padding-top: 1px;
-    padding-bottom: 1px;
-    cursor: pointer; }
-    div.dc-html-legend .dc-legend-item-vertical.selected {
-      background-color: #3182bd;
-      color: white; }
-  div.dc-html-legend .dc-legend-item-color {
-    display: table-cell;
-    width: 12px;
-    height: 12px; }
-  div.dc-html-legend .dc-legend-item-label {
-    line-height: 12px;
-    display: table-cell;
-    vertical-align: middle;
-    padding-left: 3px;
-    padding-right: 3px;
-    font-size: 0.75em; }
+
+div.dc-html-legend .dc-legend-item-horizontal {
+  display: inline-block;
+  margin-left: 5px;
+  margin-right: 5px;
+  cursor: pointer; }
+
+div.dc-html-legend .dc-legend-item-horizontal.selected {
+  background-color: #3182bd;
+  color: white; }
+
+div.dc-html-legend .dc-legend-item-vertical {
+  display: block;
+  margin-top: 5px;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  cursor: pointer; }
+
+div.dc-html-legend .dc-legend-item-vertical.selected {
+  background-color: #3182bd;
+  color: white; }
+
+div.dc-html-legend .dc-legend-item-color {
+  display: table-cell;
+  width: 12px;
+  height: 12px; }
+
+div.dc-html-legend .dc-legend-item-label {
+  line-height: 12px;
+  display: table-cell;
+  vertical-align: middle;
+  padding-left: 3px;
+  padding-right: 3px;
+  font-size: 0.75em; }
 
 .dc-html-legend-container {
   height: inherit; }

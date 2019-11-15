@@ -5,18 +5,16 @@ const dateFormatParser = d3.timeParse(dateFormatSpecifier);
 
 let categoryChart = dc.pieChart('#category-piechart');
 let environmentChart = dc.rowChart('#environment-rowchart');
-let LivesSavedND = dc.numberDisplay("#LivesSaved"),
-    LivesRescuedND = dc.numberDisplay("#LivesRescued"),
-    LivesAssistedND = dc.numberDisplay("#LivesAssisted"),
-    LivesLostND = dc.numberDisplay("#LivesLost");
-let responseChart = dc.rowChart('#response-rowchart');
+let activationChart = dc.rowChart('#activation-rowchart');
+let typeChart = dc.rowChart('#type-rowchart');
 let monthlySeries = dc.lineChart('#incident-series');
 let mapChart = dc_leaflet.markerChart("#map-chart");
+let regionSelector = dc.selectMenu("#region-selector")
 
 monthlySeries.margins().left = 40;
 
 
-d3.csv('data/sardonyx_data.csv').then(function (data) {
+d3.csv('data/beacons_data.csv').then(function (data) {
   data.forEach(function (d) {
         d.ConfirmedLatitude = +d.LocationFindLocationLatitude;
         d.ConfirmedLongitude = +d.LocationFindLocationLongitude;
@@ -24,10 +22,7 @@ d3.csv('data/sardonyx_data.csv').then(function (data) {
         d.date2 = dateFormat(d.date);
         d.month = d3.timeMonth(d.date);
         d.geo = d.LocationFindLocationLatitude + "," + d.LocationFindLocationLongitude;
-        d.LivesSaved = +d.LivesSaved;
-        d.LivesRescued = +d.LivesRescued;
-        d.LivesAssisted = +d.LivesAssisted;
-        d.LivesLost = +d.NumberPerishedOrAssumedPerished;
+        d.region = d.NAME;
     });
 
   console.log(data);
@@ -38,42 +33,18 @@ d3.csv('data/sardonyx_data.csv').then(function (data) {
 
 
   /* create a dimension for monthly incidents */
+  let regionDimension = ndx.dimension(function (d) {
+        return d.region;
+    });
+
+  let regionDimensionGroup = regionDimension.group();
+
+  /* create a dimension for monthly incidents */
   let monthlyDimension = ndx.dimension(function (d) {
         return d.month;
     });
 
   let monthlyDimensionGroup = monthlyDimension.group();
-
-  let metricsGroup = ndx.groupAll().reduce(
-    function(p, v){
-      ++p.count;
-      p.TotalLivesSaved += v.LivesSaved;
-      p.TotalLivesRescued += v.LivesRescued;
-      p.TotalLivesAssisted += v.LivesAssisted;
-      p.TotalLivesLost += v.LivesLost;
-      return p;
-    },
-    function(p, v){
-      --p.count;
-      p.TotalLivesSaved -= v.LivesSaved;
-      p.TotalLivesRescued -= v.LivesRescued;
-      p.TotalLivesAssisted -= v.LivesAssisted;
-      p.TotalLivesLost -= v.LivesLost;
-      return p;
-    },
-    function(){
-      return{
-        count: 0,
-        TotalLivesSaved: 0,
-        TotalLivesRescued: 0,
-        TotalLivesAssisted: 0,
-        TotalLivesLost: 0
-      };
-
-    }
-  );
-
-console.log(metricsGroup);
 
   /* create a dimension for SAR Category */
   let categoryDimension = ndx.dimension(function (d) {
@@ -84,12 +55,20 @@ console.log(metricsGroup);
 
 
 
-  /* create a dimension for Response type */
-  let responseDimension = ndx.dimension(function (d) {
-        return d.Response;
+  /* create a dimension for Activation reason */
+  let activationDimension = ndx.dimension(function (d) {
+        return d.ActivationReason;
     });
 
-  let responseDimensionGroup = responseDimension.group();
+  let activationDimensionGroup = activationDimension.group();
+
+
+  /* create a dimension for Response type */
+  let typeDimension = ndx.dimension(function (d) {
+        return d.BeaconType;
+    });
+
+  let typeDimensionGroup = typeDimension.group();
 
 
   /* create a dimension for Environment */
@@ -119,36 +98,12 @@ console.log(metricsGroup);
               return {count: 0};
           }
       );
+  
+  // create region regionSelector
+  regionSelector
+    .dimension(regionDimension)
+    .group(regionDimensionGroup);
 
-
-// create the numberDisplays for the key metrics
-  LivesSavedND
-    .formatNumber(d3.format(",.2r"))
-    .valueAccessor(function(p){
-      return p.TotalLivesSaved;
-    })
-    .group(metricsGroup);
-
-  LivesRescuedND
-    .formatNumber(d3.format(",.2r"))
-    .valueAccessor(function(p){
-      return p.TotalLivesRescued;
-    })
-    .group(metricsGroup);
-
-  LivesAssistedND
-    .formatNumber(d3.format(",.2r"))
-    .valueAccessor(function(p){
-      return p.TotalLivesAssisted;
-    })
-    .group(metricsGroup);
-
-  LivesLostND
-    .formatNumber(d3.format(",.2r"))
-    .valueAccessor(function(p){
-      return p.TotalLivesLost;
-    })
-    .group(metricsGroup);
 
 
   /* build pie chart for Categories*/
@@ -169,9 +124,17 @@ console.log(metricsGroup);
 
 
   /* build row chart for Responses*/
-  responseChart
-    .dimension(responseDimension)
-    .group(responseDimensionGroup)
+  activationChart
+    .dimension(activationDimension)
+    .group(activationDimensionGroup)
+    .transitionDuration(500)
+    .controlsUseVisibility(true)
+    .elasticX(true);
+
+  /* build row chart for Responses*/
+  typeChart
+    .dimension(typeDimension)
+    .group(typeDimensionGroup)
     .transitionDuration(500)
     .controlsUseVisibility(true)
     .elasticX(true);
@@ -240,15 +203,14 @@ console.log(metricsGroup);
      });
    });
 
+
+
    // set behaviour for the date pickers
    // these will set the ranges on the monthly series
    $("#datepicker-from").on('change', function() {
      let date_from = $("#datepicker-from").datepicker("getDate");
      let date_to = $("#datepicker-to").datepicker("getDate");
 
-     // this tests if both date_from and date_to have a selection made
-     // if they do then the brush on the monthly series is updated to
-     // reflect the selected dates
      if(date_from && date_to){
        monthlyDimension.filterRange([date_from, date_to]);
        monthlySeries.filter(dc.filters.RangedFilter(date_from, date_to));
@@ -267,6 +229,7 @@ console.log(metricsGroup);
      }
     });
 
+
     // if the monthly series chart is filtered we want to show the
     // current date filter values in the date picker widgets
     monthlySeries.on("filtered", function(chart){
@@ -275,8 +238,13 @@ console.log(metricsGroup);
         let range = filters[0];
         $('#datepicker-from').datepicker("setDate", range[0] );
         $('#datepicker-to').datepicker("setDate", range[1] );
+      } else {
+        let dateExtent = d3.extent(data, function(d) { return d.date2; });
+        $('#datepicker-from').datepicker("setDate", dateExtent[0] );
+        $('#datepicker-to').datepicker("setDate", dateExtent[1] );
       }
     })
+
 
   dc.renderAll();
 

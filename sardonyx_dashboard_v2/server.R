@@ -8,7 +8,8 @@ library(readxl)
 library(servr)
 
 setwd("C:/Users/leanj/sardonyx_dashboard_v2")
-# load("data/incidents.rda")
+setwd("C:/Users/leanj/sardonyx_dashboard")
+load("data/incidents.rda")
 
 
 httw()

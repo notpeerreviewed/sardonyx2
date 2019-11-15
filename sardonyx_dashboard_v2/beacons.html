@@ -44,6 +44,10 @@
             <br>
             <input type="text" id="datepicker-to" class="date-picker" placeholder="yyyy-mm-dd">
           </div>
+          <div id="region-selector">
+            <span>Select region:</span>
+            <br>
+          </div>
         </div>
 
 
@@ -68,36 +72,21 @@
           <div id="category-piechart"></div>
         </div>
 
-        <div class="chart dc-chart" id="metrics">
-          <span>Key metrics</span>
-          <div id="LivesSaved">
-            Lives Saved: <span class="number-display"></span>
-          </div>
-
-          <div id="LivesRescued">
-            Lives Rescued: <span class="number-display"></span>
-          </div>
-
-          <div id="LivesAssisted">
-            Lives Assisted: <span class="number-display"></span>
-          </div>
-
-          <div id="LivesLost">
-            Lives Lost: <span class="number-display"></span>
-          </div>
+        <div class="chart dc-chart" id="type-wrapper">
+          <span>Beacon type</span>
+          <div id="type-rowchart"></div>
 
         </div>
 
-        <div class="chart dc-chart" id="responses-wrapper">
-          <span>Response Chart</span>
+        <div class="chart dc-chart" id="activation-wrapper">
+          <span>Activation reason</span>
           <a class='reset'
                   href='javascript:responsesChart.filterAll();dc.redrawAll();'
                   style='visibility: hidden;'>reset</a>
-        <div id="response-rowchart"></div>
+        <div id="activation-rowchart"></div>
         </div>
 
         <div class="chart dc-chart map-chart" id="map-chart">
-
         </div>
 
         <div class="chart dc-chart" id="incident-series">
@@ -112,6 +101,6 @@
 
     </div>
 
-    <script src="js/main.js" type="text/javascript"></script>
+    <script src="js/beacons.js" type="text/javascript"></script>
 
   </body>

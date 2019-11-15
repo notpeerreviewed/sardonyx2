@@ -24,10 +24,12 @@ body {
 .container {
   display: grid;
   grid-template-rows: 95vh;
-  grid-template-columns: [sidebar-start] max-content [sidebar-end dashboard-start] 1fr [dashboard-end];
+  grid-template-columns: [sidebar-start] min-content [sidebar-end dashboard-start] 1fr [dashboard-end];
 }
 
 .sidebar {
+  display: grid;
+  grid-template-columns: 1fr;
   background-color: rgb(36, 98, 170);
   grid-column: sidebar-start / sidebar-end;
   font-size: 2rem;
@@ -51,12 +53,13 @@ body {
   font-weight: 400;
 }
 
-#metrics {
+#region-selector {
+  grid-column: 1 / -1;
+}
+
+#type-wrapper {
   grid-row: 1 / 2;
   grid-column: 1 / 2;
-
-  display: grid;
-  grid-template-rows: auto;
 }
 
 #category-wrapper {
@@ -70,7 +73,7 @@ body {
 
 }
 
-#responses-wrapper {
+#activation-wrapper {
   grid-row: 2 / 3;
   grid-column: 2 / 3;
 }
