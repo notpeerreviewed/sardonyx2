@@ -2,19 +2,18 @@
 <!DOCTYPE html>
   <html lang="en">
     <head>
-      <title>Sardonyx Overview Prototype</title>
+      <title>Sardonyx Police Records Prototype</title>
 
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-
+      <link rel="stylesheet" href="css/main.css">
 
       <!--<script type="text/javascript" src="js/jquery.min.js"></script>-->
 
       <script type="text/javascript" src="js/d3.js"></script>
-      <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter2/1.4.7/crossfilter.min.js"></script> -->
-      <script type="text/javascript" src="js/crossfilter.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter2/1.4.7/crossfilter.min.js"></script>
       <script type="text/javascript" src="js/dc.min.js"></script>
       <script type="text/javascript" src="js/leaflet.js"></script>
       <script type="text/javascript" src="js/leaflet.markercluster.js"></script>
@@ -24,7 +23,6 @@
       <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
       <script src="//code.jquery.com/jquery-1.10.2.js"></script>
       <script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
-      <link rel="stylesheet" href="css/main.css">
 
     </head>
 
@@ -46,8 +44,13 @@
             <br>
             <input type="text" id="datepicker-to" class="date-picker" placeholder="yyyy-mm-dd">
           </div>
-          <div id="region-selector">
+          <div id="district-selector">
             <span>Select region:</span>
+            <br>
+          </div>
+
+          <div id="area-selector">
+            <span>Select area:</span>
             <br>
           </div>
         </div>
@@ -60,48 +63,40 @@
 
         <div class="chart dc-chart" id="environment-wrapper">
           <span>Environment Chart</span>
-
-          <div id="environment-rowchart">
-            <a class='reset'
-                    href='javascript:environmentChart.filterAll();dc.redrawAll();'
-                    style='visibility: hidden;'>reset</a>
-          </div>
+          <a class='reset'
+                  href='javascript:environmentChart.filterAll();dc.redrawAll();'
+                  style='visibility: hidden;'>reset</a>
+          <div id="environment-rowchart"></div>
         </div>
 
-        <div class="chart dc-chart" id="category-wrapper">
-          <span>Category Chart</span>
+        <div class="chart dc-chart" id="status-wrapper">
+          <span>Status Chart</span>
           <a class='reset'
                   href='javascript:categoryChart.filterAll();dc.redrawAll();'
                   style='visibility: hidden;'>reset</a>
-          <div id="category-piechart"></div>
+          <div id="status-rowchart"></div>
         </div>
 
-        <div class="chart dc-chart" id="type-wrapper">
-          <span>Beacon type</span>
-          <a class='reset'
-                  href='javascript:typeChart.filterAll();dc.redrawAll();'
-                  style='visibility: hidden;'>reset</a>
-          <div id="type-rowchart"></div>
+        <div class="chart dc-chart" id="responses-wrapper">
+          <span>Response type</span>
+
 
         </div>
 
-        <div class="chart dc-chart" id="activation-wrapper">
-          <span>Activation reason</span>
-          <a class='reset'
-                  href='javascript:responsesChart.filterAll();dc.redrawAll();'
-                  style='visibility: hidden;'>reset</a>
-        <div id="activation-rowchart"></div>
+        <div class="chart dc-chart map-chart" id="police-map-chart">
+        <!-- <div id="lag-boxplot"></div> -->
         </div>
 
-
-        <div class="chart dc-chart map-chart" id="map-chart">
+        <div class="chart dc-chart" id="lag-wrapper">
+          <span>Reporting lag (days)</span>
+          <div id="lag-boxplot"></div>
         </div>
 
         <div class="chart dc-chart" id="incident-series">
-          <!-- <span>Monthly Series Chart</span>
+          <span>Monthly Series Chart</span>
                         <a class='reset'
                           href='javascript:monthlySeries.filterAll();dc.redrawAll();'
-                          style='visibility: hidden;'>reset</a> -->
+                          style='visibility: hidden;'>reset</a>
         </div>
 
 
@@ -109,6 +104,6 @@
 
     </div>
 
-    <script src="js/beacons.js" type="text/javascript"></script>
+    <script src="js/police.js" type="text/javascript"></script>
 
   </body>

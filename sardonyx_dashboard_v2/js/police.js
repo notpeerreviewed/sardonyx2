@@ -3,19 +3,20 @@ const dateFormatSpecifier = '%Y-%m-%d';
 const dateFormat = d3.timeFormat(dateFormatSpecifier);
 const dateFormatParser = d3.timeParse(dateFormatSpecifier);
 
-let regionSelector = dc.selectMenu("#region-selector");
-let categoryChart = dc.pieChart('#category-piechart');
+let districtSelector = dc.selectMenu("#district-selector");
+let areaSelector = dc.selectMenu("#area-selector");
+let statusChart = dc.rowChart('#status-rowchart');
 let environmentChart = dc.rowChart('#environment-rowchart');
-let activationChart = dc.rowChart('#activation-rowchart');
-let typeChart = dc.rowChart('#type-rowchart');
+let lagChart = dc.boxPlot('#lag-boxplot');
+let responseChart = dc.rowChart('#response-rowchart');
 let monthlySeries = dc.lineChart('#incident-series');
-let mapChart = dc_leaflet.markerChart("#map-chart");
+let mapChart = dc_leaflet.markerChart("#police-map-chart");
 
 
 monthlySeries.margins().left = 40;
 
 
-d3.csv('data/beacons_data.csv').then(function (data) {
+d3.csv('data/police_spatial.csv').then(function (data) {
   data.forEach(function (d) {
         d.ConfirmedLatitude = +d.LocationFindLocationLatitude;
         d.ConfirmedLongitude = +d.LocationFindLocationLongitude;
@@ -23,7 +24,7 @@ d3.csv('data/beacons_data.csv').then(function (data) {
         d.date2 = dateFormat(d.date);
         d.month = d3.timeMonth(d.date);
         d.geo = d.LocationFindLocationLatitude + "," + d.LocationFindLocationLongitude;
-        d.region = d.NAME;
+        d.reporting_lag_days = +d.reporting_lag_days;
     });
 
   console.log(data);
@@ -34,11 +35,41 @@ d3.csv('data/beacons_data.csv').then(function (data) {
 
 
   /* create a dimension for monthly incidents */
-  let regionDimension = ndx.dimension(function (d) {
-        return d.region;
+  let districtDimension = ndx.dimension(function (d) {
+        return d.District;
     });
 
-  let regionDimensionGroup = regionDimension.group();
+  let districtDimensionGroup = districtDimension.group();
+
+  /* create a dimension for monthly incidents */
+  let areaDimension = ndx.dimension(function (d) {
+        return d.Area;
+    });
+
+  let areaDimensionGroup = areaDimension.group();
+
+  let bpdistrictDimension = ndx.dimension(function (d) {
+        return d.District;
+    });
+
+  bpdistrictDimensionGroup = districtDimension.group().reduce(
+        function(p,v) {
+          // keep array sorted for efficiency
+		  let dv = v.reporting_lag_days;
+          if (dv != Infinity && dv != null) p.splice(d3.bisectLeft(p, dv), 0, dv);
+          //p.splice(d3.bisectLeft(p, v.reporting_lag_days), 0, v.reporting_lag_days);
+          return p;
+        },
+        function(p,v) {
+		  let dv = v.reporting_lag_days;
+          if (dv != Infinity && dv != null) p.splice(d3.bisectLeft(p, dv), 1);
+          //p.splice(d3.bisectLeft(p, v.reporting_lag_days), 1);
+          return p;
+        },
+        function() {
+          return [];
+        }
+      );
 
   /* create a dimension for monthly incidents */
   let monthlyDimension = ndx.dimension(function (d) {
@@ -47,29 +78,29 @@ d3.csv('data/beacons_data.csv').then(function (data) {
 
   let monthlyDimensionGroup = monthlyDimension.group();
 
-  /* create a dimension for SAR Category */
-  let categoryDimension = ndx.dimension(function (d) {
-        return d.SarCategory;
+  /* create a dimension for Status */
+  let statusDimension = ndx.dimension(function (d) {
+        return d.Status;
     });
 
-  let categoryDimensionGroup = categoryDimension.group();
+  let statusDimensionGroup = statusDimension.group();
 
 
 
   /* create a dimension for Activation reason */
-  let activationDimension = ndx.dimension(function (d) {
-        return d.ActivationReason;
+  let lagDimension = ndx.dimension(function (d) {
+        return d.reporting_lag_days;
     });
 
-  let activationDimensionGroup = activationDimension.group();
+  let lagDimensionGroup = lagDimension.group();
 
 
   /* create a dimension for Response type */
-  let typeDimension = ndx.dimension(function (d) {
-        return d.BeaconType;
+  let responseDimension = ndx.dimension(function (d) {
+        return d.Response;
     });
 
-  let typeDimensionGroup = typeDimension.group();
+  let responseDimensionGroup = responseDimension.group();
 
 
   /* create a dimension for Environment */
@@ -101,19 +132,24 @@ d3.csv('data/beacons_data.csv').then(function (data) {
       );
 
   // create region regionSelector
-  regionSelector
-    .dimension(regionDimension)
-    .group(regionDimensionGroup);
+  districtSelector
+    .dimension(districtDimension)
+    .group(districtDimensionGroup);
+
+  // create region areaSelector
+  areaSelector
+    .dimension(areaDimension)
+    .group(areaDimensionGroup);
 
 
 
   /* build pie chart for Categories*/
-  categoryChart
-    .radius(null)
-    .dimension(categoryDimension)
-    .group(categoryDimensionGroup)
+  statusChart
+    .dimension(statusDimension)
+    .group(statusDimensionGroup)
     .transitionDuration(500)
-    .controlsUseVisibility(true);
+    .controlsUseVisibility(true)
+    .elasticX(true);
 
   /* build row chart for Environments*/
   environmentChart
@@ -121,27 +157,25 @@ d3.csv('data/beacons_data.csv').then(function (data) {
     .group(environmentDimensionGroup)
     .transitionDuration(500)
     .controlsUseVisibility(true)
-    .elasticX(true)
-    .xAxis().ticks(5);
+    .elasticX(true);
 
 
   /* build row chart for Responses*/
-  activationChart
-    .dimension(activationDimension)
-    .group(activationDimensionGroup)
+  responseChart
+    .dimension(responseDimension)
+    .group(responseDimensionGroup)
     .transitionDuration(500)
     .controlsUseVisibility(true)
-    .elasticX(true)
-    .xAxis().ticks(5);
+    .elasticX(true);
 
-  /* build row chart for Responses*/
-  typeChart
-    .dimension(typeDimension)
-    .group(typeDimensionGroup)
+  /* build row chart for Reporting Lag boxplot*/
+  lagChart
+    .dimension(bpdistrictDimension)
+    .group(bpdistrictDimensionGroup)
     .transitionDuration(500)
     .controlsUseVisibility(true)
-    .elasticX(true)
-    .xAxis().ticks(5);
+	.elasticY(true)
+    .elasticX(true);
 
 
   /* build line chart for time series*/
@@ -247,13 +281,12 @@ d3.csv('data/beacons_data.csv').then(function (data) {
         $('#datepicker-from').datepicker("setDate", dateExtent[0] );
         $('#datepicker-to').datepicker("setDate", dateExtent[1] );
       }
-    });
-
-
+    })
 
 
   dc.renderAll();
 
   dc.redrawAll();
+
 
 });

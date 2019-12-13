@@ -36,6 +36,10 @@ body {
   color: white;
 }
 
+.sidebar > div {
+  height: 100%;
+}
+
 .dashboard {
   display: grid;
   grid-template-rows: 1fr 1fr 1fr;
@@ -46,11 +50,17 @@ body {
   margin-left: 2rem;
 }
 
+.dashboard > div {
+  height: 100%;
+}
+
 .chart {
+  display: grid;
   background-color: rgb(155, 163, 167);
-  font-size: 2rem;
+  font-size: 1.5rem;
   color: white;
   font-weight: 400;
+  padding: 0;
 }
 
 #region-selector {
@@ -87,4 +97,5 @@ body {
   grid-row: 3 / -1;
   grid-column: 1 / -1;
   position: relative;
+  padding-left: 1rem;
 }

@@ -1,0 +1,52 @@
+
+
+
+#district-selector {
+  grid-column: 1 / -1;
+}
+
+#area-selector {
+  grid-column: 1 / -1;
+}
+
+#status-wrapper {
+  grid-row: 1 / 2;
+  grid-column: 1 / 2;
+}
+
+#environment-wrapper {
+  grid-row: 2 / 3;
+  grid-column: 1 / 2;
+
+}
+
+#lag-wrapper {
+  grid-row: 1 / 3;
+  grid-column: 3 / -1;
+  display: grid;
+}
+
+#lag-boxplot {
+  align-self: stretch;
+}
+
+#lag-boxplot > svg {
+  overflow: visible;
+}
+
+#lag-boxplot .x.axis text{
+  text-anchor: end !important;
+  transform: rotate(-45deg);
+}
+
+
+#police-map-chart {
+  grid-row: 1 / 3;
+  grid-column: 2 / 3;
+}
+
+#incident-series {
+  grid-row: 3 / -1;
+  grid-column: 1 / -1;
+  position: relative;
+}
