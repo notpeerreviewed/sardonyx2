@@ -10,8 +10,6 @@
 
       <link rel="stylesheet" href="css/main.css">
 
-      <!--<script type="text/javascript" src="js/jquery.min.js"></script>-->
-
       <script type="text/javascript" src="js/d3.js"></script>
       <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter2/1.4.7/crossfilter.min.js"></script>
       <script type="text/javascript" src="js/dc.min.js"></script>
@@ -31,34 +29,18 @@
   <body>
     <div class="container">
 
-      <div class="sidebar">
-        <div>
-          <span>SARdonyx</span>
-          <div id="date-from">
-            <span>Select start date</span>
-            <br>
-            <input type="text" id="datepicker-from" class="date-picker" placeholder="yyyy-mm-dd">
-          </div>
-          <div id="date-to">
-            <span>Select end date</span>
-            <br>
-            <input type="text" id="datepicker-to" class="date-picker" placeholder="yyyy-mm-dd">
-          </div>
-        </div>
-
-
+      <div class="header">
+        <h1>SARdonyx</h1>
+        <form>
+          <input type="text" id="datepicker-from" class="date-picker" placeholder="Start date">
+          <input type="text" id="datepicker-to" class="date-picker" placeholder="End date">
+        </form>
 
       </div>
 
+
       <div class="dashboard">
 
-        <!-- <div class="chart dc-chart" id="environment-wrapper">
-          <span>Environment Chart</span>
-          <a class='reset'
-                  href='javascript:environmentChart.filterAll();dc.redrawAll();'
-                  style='visibility: hidden;'>reset</a>
-          <div id="environment-rowchart"></div>
-        </div> -->
 
         <div class="chart dc-chart" id="environment-rowchart">
           <span>Environment Chart</span>
@@ -68,12 +50,12 @@
 
         </div>
 
-        <div class="chart dc-chart" id="category-wrapper">
+        <div class="chart dc-chart" id="category-piechart">
           <span>Category Chart</span>
           <a class='reset'
                   href='javascript:categoryChart.filterAll();dc.redrawAll();'
                   style='visibility: hidden;'>reset</a>
-          <div id="category-piechart"></div>
+          
         </div>
 
         <div class="chart dc-chart" id="metrics">

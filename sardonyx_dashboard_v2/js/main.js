@@ -157,7 +157,9 @@ console.log(metricsGroup);
     .dimension(categoryDimension)
     .group(categoryDimensionGroup)
     .transitionDuration(500)
-    .controlsUseVisibility(true);
+    .controlsUseVisibility(true)
+    .width(100)
+    .height(100);
 
   /* build row chart for Environments*/
   environmentChart
@@ -165,7 +167,9 @@ console.log(metricsGroup);
     .group(environmentDimensionGroup)
     .transitionDuration(500)
     .controlsUseVisibility(true)
-    .elasticX(true);
+    .elasticX(true)
+    .xAxis()
+    .ticks(5);
 
 
   /* build row chart for Responses*/
@@ -174,7 +178,9 @@ console.log(metricsGroup);
     .group(responseDimensionGroup)
     .transitionDuration(500)
     .controlsUseVisibility(true)
-    .elasticX(true);
+    .elasticX(true)
+    .xAxis()
+    .ticks(5);
 
 
   /* build line chart for time series*/
@@ -194,7 +200,7 @@ console.log(metricsGroup);
 	  .group(mapDimensionGroup)
 	  .valueAccessor(d => d.value.count)
 	  .center([-40.77,173.59])
-	  .zoom(3)
+	  .zoom(5)
 	  .renderPopup(false)
 	  .brushOn(true)
 	  .cluster(true)
@@ -229,9 +235,9 @@ console.log(metricsGroup);
       });
 
   // used to reset the map
-  $("#mapReset").on('click', function() {
-		mapChart.map().setView([-40.77,173.59], 3);
-	 });
+  // $("#mapReset").on('click', function() {
+	// 	mapChart.map().setView([-40.77,173.59], 3);
+	//  });
 
    // date picker function for the sidebar
    $(function() {

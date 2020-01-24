@@ -23,48 +23,59 @@ body {
 
 .container {
   display: grid;
-  grid-template-rows: 95vh;
-  grid-template-columns: [sidebar-start] max-content [sidebar-end dashboard-start] 1fr [dashboard-end];
+  width: 1000px;
+  /* height: 70vh; */
+  grid-template-rows: 1fr 7fr;
+
 }
 
-.sidebar {
+.header {
+  display: grid;
   background-color: rgb(36, 98, 170);
-  grid-column: sidebar-start / sidebar-end;
+  grid-column: 1 / -1;
+  grid-row: 1 / 2;
+  /* justify-items: start; */
   font-size: 2rem;
   color: white;
+  margin-bottom: 1rem;
+  padding-left: 1rem;
 }
 
-.dashboard {
+ .dashboard {
   display: grid;
+  grid-row: 2 / -1;
+  grid-column: 1 / -1;
   grid-template-rows: 1fr 1fr 1fr;
-  grid-template-columns: repeat(4, [col-start] 1fr [col-end]);
+  grid-template-columns: 250px 250px 500px;
   background-color: rgb(73, 97, 131, 0.2);
-  grid-column: dashboard-start / dashboard-end;
-  grid-gap: 1.5rem;
-  margin-left: 2rem;
+  grid-gap: 1.7rem;
 }
 
 .chart {
   background-color: rgb(155, 163, 167);
-  font-size: 2rem;
+  font-size: 1.7em;
   color: white;
   font-weight: 400;
+  border-color: red;
 }
 
 #metrics {
-  grid-row: 1 / 2;
-  grid-column: 1 / 2;
-
   display: grid;
   grid-template-rows: auto;
+  grid-row: 1 / 2;
+  grid-column: 1 / 2;
+  padding-left: 1rem;
 }
 
-#category-wrapper {
+#category-piechart {
+  display: grid;
+  /* align-items: center; */
   grid-row: 1 / 2;
   grid-column: 2 / 3;
+  padding-left: 1rem;
 }
 
-#environment-wrapper {
+#environment-rowchart {
   grid-row: 2 / 3;
   grid-column: 1 / 2;
 
@@ -75,7 +86,7 @@ body {
   grid-column: 2 / 3;
 }
 
-#map-chart {
+ #map-chart {
   grid-row: 1 / 3;
   grid-column: 3 / -1;
 }

@@ -5,6 +5,8 @@ library(odbc)
 library(magrittr)
 library(dplyr)
 library(tidyr)
+library(stringr)
+library(purrr)
 library(lubridate)
 library(sf)
 library(ggplot2)
@@ -17,7 +19,7 @@ setwd("C:/Users/leanj/sardonyx_dashboard_v2")
 
 con <- DBI::dbConnect(odbc::odbc(),
                       Server = "13.73.109.251",
-                      Database = "sardonyxproduction-2019-11-15-9-9",
+                      Database = "sardonyxproduction-backup",
                       Driver = "SQL Server",
                       UID = "jeff@sardonyxqa.database.windows.net",
                       PWD = "Welc0m3S@rdonyx",
@@ -31,8 +33,8 @@ police_assets <- dbGetQuery(con, "SELECT Id, Name, Cost FROM PoliceAssets")
 # basic file for overview page
 df <- incidents %>%
   select(IncidentEnvironmentId, SarCategoryOrNonSarActivityTypeId, ResponseId, NotificationDateTimeUtc,
-         LocationFindLocationLatitude, LocationFindLocationLongitude, LivesSaved, LivesRescued,
-         LivesAssisted, NumberPerishedOrAssumedPerished) %>%
+         LocationFindLocationLatitude, LocationFindLocationLongitude, LocationIppOrLkpLatitude,
+         LocationIppOrLkpLongitude, LivesSaved, LivesRescued, LivesAssisted, NumberPerishedOrAssumedPerished) %>%
   mutate(date = as.Date(NotificationDateTimeUtc) %>% as.character(),
          Environment = case_when(IncidentEnvironmentId == 1 ~ "Air",
                                  IncidentEnvironmentId == 2 ~ "Land",
@@ -42,8 +44,15 @@ df <- incidents %>%
                                  TRUE ~ "Cat2"),
          Response = case_when(ResponseId == 1 ~ "Communications",
                               ResponseId == 2 ~ "SAROP",
-                              TRUE ~ "Other")) %>%
-  select(-NotificationDateTimeUtc, -IncidentEnvironmentId, -SarCategoryOrNonSarActivityTypeId, -ResponseId) %>%
+                              TRUE ~ "Other"),
+         LocationFindLocationLatitude = case_when(is.na(LocationFindLocationLatitude) ~ LocationIppOrLkpLatitude,
+                                                  TRUE ~ LocationFindLocationLatitude),
+         LocationFindLocationLongitude = case_when(is.na(LocationFindLocationLongitude) ~ LocationIppOrLkpLongitude,
+                                                  TRUE ~ LocationFindLocationLongitude)) %>%
+  # filter(year(date) == 2019) %>%
+  # filter(year(date) == 2019, is.na(LocationFindLocationLongitude)) %>%
+  select(-NotificationDateTimeUtc, -IncidentEnvironmentId, -SarCategoryOrNonSarActivityTypeId, -ResponseId,
+         -LocationIppOrLkpLatitude, -LocationIppOrLkpLongitude) %>%
   filter(!is.na(LocationFindLocationLongitude) & !is.na(LocationFindLocationLatitude & !is.na(date))) %>%
   mutate_at(vars(LivesSaved, LivesRescued, LivesAssisted, NumberPerishedOrAssumedPerished), ~ ifelse(is.na(.), 0, .))
 
@@ -167,7 +176,7 @@ test <- police_spatial %>%
   group_by(District) %>%
   count()
 
-ggplot(test, aes(x = District, y = reporting_lag_days)) + geom_boxplot() + coord_flip()
+#ggplot(test, aes(x = District, y = reporting_lag_days)) + geom_boxplot() + coord_flip()
 
 
 
@@ -176,26 +185,83 @@ ggplot(test, aes(x = District, y = reporting_lag_days)) + geom_boxplot() + coord
 
 # Harbourmaster Dataset
 incidents <- dbGetQuery(con, "SELECT * FROM Incidents")
-activities_water <- dbGetQuery(con, "SELECT Id, Name, SystemCode FROM ActivitiesWater")
+sar_category <- dbGetQuery(con, "SELECT Id, Name FROM SarCategoryOrNonSarActivityTypes")
+responses <- dbGetQuery(con, "SELECT Id, Name FROM Responses")
+activities_water <- dbGetQuery(con, "SELECT Id, Name FROM ActivitiesWater")
 alert_method <- dbGetQuery(con, "SELECT Id, Name FROM AlertMethods")
 causes_of_incident_vessel <- dbGetQuery(con, "SELECT Id, Name FROM CausesOfIncidentVessel")
-ethnicities <- dbGetQuery(con, "SELECT Id, Name FROM Ethnicities")
-subject_people <- dbGetQuery(con, "SELECT Id, IncidentId, Age, SexId, EthnicityId FROM Ethnicities")
+root_cause <- dbGetQuery(con, "SELECT Id, Name FROM RootCauses")
+
 subject_vessels <- dbGetQuery(con, "SELECT * FROM IncidentSubjectVessels")
 non_recreational_vessel_types <- dbGetQuery(con, "SELECT Id, Name FROM NonRecreationalVesselTypes")
 recreational_vessel_types <- dbGetQuery(con, "SELECT Id, Name FROM RecreationalVesselTypes")
 vessel_master_profiles <- dbGetQuery(con, "SELECT Id, Name FROM VesselMasterProfiles")
 
+# probably best to create a dedicated subjects page
+subject_people <- dbGetQuery(con, "SELECT Id, IncidentId, Age, SexId, EthnicityId FROM IncidentSubjectPeople")
+ethnicities <- dbGetQuery(con, "SELECT Id, Name FROM Ethnicities")
+
+# we need to extract the data we require from the incidents table and then augment with the data from
+# associated tables
+df <- incidents %>%
+  # select(Id, Deleted, IncidentEnvironmentId, BeaconActivation, BeaconTypeId, NotificationDateTimeUtc,
+  #        CompletionDateTimeUtc, ResponseId, AlertMethodId, PoliceDistrictId, SarCategoryOrNonSarActivityTypeId,
+  #        ActivityWaterId, CauseOfIncidentVesselId, LocationFindLocationLatitude, LocationFindLocationLongitude,
+  #        RootCauseId,LivesSaved:FatalityAfterSarAlertedId) %>%
+  select(Id, Deleted, IncidentEnvironmentId, NotificationDateTimeUtc,
+         ActivityWaterId, CauseOfIncidentVesselId, LocationFindLocationLatitude, LocationFindLocationLongitude,
+         RootCauseId) %>%
+  filter(IncidentEnvironmentId == 3, Deleted != TRUE) %>%
+  left_join(subject_vessels[,c("IncidentId", "RecreationalVesselTypeId", "NonRecreationalVesselTypeId")], by = c("Id" = "IncidentId")) %>%
+  left_join(recreational_vessel_types, by = c("RecreationalVesselTypeId" = "Id")) %>%
+  rename(RecVessel = Name) %>%
+  left_join(non_recreational_vessel_types, by = c("NonRecreationalVesselTypeId" = "Id")) %>%
+  rename(NonRecVessel = Name)
 
 
 
+
+  left_join(activities_water, by = c("ActivityWaterId" = "Id")) %>%
+  rename(WaterActivity = Name) %>%
+  # left_join(alert_method, by = c("AlertMethodId" = "Id")) %>%
+  # rename(AlertMethod = Name) %>%
+  left_join(causes_of_incident_vessel, by = c("CauseOfIncidentVesselId" = "Id")) %>%
+  rename(CauseOfIncident = Name) %>%
+  left_join(root_cause, by = c("RootCauseId" = "Id")) %>%
+  rename(RootCause = Name) %>%
+  left_join(subject_vessels, by = c("Id" = "IncidentId"))
+  
+  
+test <- df %>%
+  filter(IncidentEnvironmentId == 3) %>%
+  select(NotificationDateTimeUtc, WaterActivity) %>%
+  mutate(date = as.Date(NotificationDateTimeUtc) %>% floor_date(unit = 'month')) %>%
+  group_by(date) %>%
+  count(WaterActivity) %>%
+  ungroup() %>%
+  filter(date > ymd("2019-05-06"))
+
+
+ggplot(test, aes(x = date, y = n)) + geom_line() + facet_wrap(~WaterActivity)
+
+
+
+
+
+incidents <- dbGetQuery(con, "SELECT * FROM DenormalizedIncidents")
+vessels <- dbGetQuery(con, "SELECT * FROM DenormalizedSubjectVessels")
 
 # db <- odbcConnect("nzsar")
 # # test <- sqlTables(db)
 # 
 # # get the old police event records
-# sql="SELECT DISTINCT Event, EventID FROM Staging.vwPOLICE_Incidents_AllRecords"
-# police_incidents_old <- sqlQuery(db,sql)
+# sql="SELECT * FROM Landing.Vessel"
+# landing_vessel <- sqlQuery(db,sql)
+# 
+# df2 <- landing_vessel %>% distinct()
+# 
+# unique(df2$SelfPropelled)
+
 # 
 # # get the assets used in the old records
 # sql="SELECT EventID, RecordType, AdminHrs, AdminCost FROM Staging.vwStaging_Admin"

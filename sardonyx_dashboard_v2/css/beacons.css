@@ -20,7 +20,7 @@ body {
   padding: 3rem;
 
 }
-
+/*
 .container {
   display: grid;
   grid-template-rows: 95vh;
@@ -61,7 +61,7 @@ body {
   color: white;
   font-weight: 400;
   padding: 0;
-}
+} */
 
 #region-selector {
   grid-column: 1 / -1;

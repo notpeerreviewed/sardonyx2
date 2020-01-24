@@ -87,7 +87,8 @@ d3.csv('data/beacons_data.csv').then(function (data) {
 
   let mapDimensionGroup = mapDimension.group().reduce(
           function(p, v) {
-              p.Environment = v.Environment;
+              // p.Environment = v.Environment;
+              p.SarCategory = v.SarCategory;
               ++p.count;
               return p;
           },
@@ -161,33 +162,50 @@ d3.csv('data/beacons_data.csv').then(function (data) {
 	  .group(mapDimensionGroup)
 	  .valueAccessor(d => d.value.count)
 	  .center([-40.77,173.59])
-	  .zoom(3)
+	  .zoom(5)
 	  .renderPopup(false)
 	  .brushOn(true)
 	  .cluster(true)
 	  .filterByArea(true)
 	  .controlsUseVisibility(true)
+    // .icon(function(d) {
+    //           var iconUrl;
+    //           switch(d.value.Environment) {
+    //           case 'Air':
+    //               iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png';
+    //               break;
+    //           case 'Marine':
+    //               iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png';
+    //               break;
+    //           case 'Land':
+    //               iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png';
+    //               break;
+    //           case 'Undetermined':
+    //               iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-grey.png';
+    //               break;
+    //           default:
+    //               iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png';
+    //           }
+    //           return new L.Icon({
+    //               iconUrl: iconUrl,
+    //               shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png'
+    //           });
+    //       });
     .icon(function(d) {
               var iconUrl;
-              switch(d.value.Environment) {
-              case 'Air':
+              switch(d.value.SarCategory) {
+              case 'Cat1':
                   iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png';
                   break;
-              case 'Marine':
+              case 'Cat2':
                   iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png';
-                  break;
-              case 'Land':
-                  iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png';
-                  break;
-              case 'Undetermined':
-                  iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-grey.png';
                   break;
               default:
                   iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png';
               }
               return new L.Icon({
                   iconUrl: iconUrl,
-                  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png'
+                  // shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png'
               });
           });
 
