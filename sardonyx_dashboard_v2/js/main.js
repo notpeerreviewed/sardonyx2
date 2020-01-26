@@ -192,7 +192,6 @@ console.log(metricsGroup);
   /* build line chart for time series*/
   monthlySeries
     .height(150)
-    .width(900)
     .dimension(monthlyDimension)
     .group(monthlyDimensionGroup)
     .x(d3.scaleTime().domain(d3.extent(data, function(d) {
