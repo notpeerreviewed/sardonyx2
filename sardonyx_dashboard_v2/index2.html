@@ -30,7 +30,7 @@
     <div class="container">
 
       <div class="header">
-        <h1>SARdonyx</h1>
+        <h1>SARdonyx: SAROP Overview</h1>
         <form>
           <input type="text" id="datepicker-from" class="date-picker" placeholder="Start date">
           <input type="text" id="datepicker-to" class="date-picker" placeholder="End date">
@@ -43,7 +43,7 @@
 
 
         <div class="chart dc-chart" id="environment-rowchart">
-          <span>Environment Chart</span>
+          <span class='environment-label'>Environment Chart</span>
           <a class='reset'
                   href='javascript:environmentChart.filterAll();dc.redrawAll();'
                   style='visibility: hidden;'>reset</a>
@@ -51,11 +51,11 @@
         </div>
 
         <div class="chart dc-chart" id="category-piechart">
-          <span>Category Chart</span>
+          <span class='pie-label'>Category Chart</span>
           <a class='reset'
                   href='javascript:categoryChart.filterAll();dc.redrawAll();'
                   style='visibility: hidden;'>reset</a>
-          
+
         </div>
 
         <div class="chart dc-chart" id="metrics">
@@ -78,12 +78,12 @@
 
         </div>
 
-        <div class="chart dc-chart" id="responses-wrapper">
-          <span>Response Chart</span>
+        <div class="chart dc-chart" id="response-rowchart">
+          <span class='reponse-label'>Response Chart</span>
           <a class='reset'
-                  href='javascript:responsesChart.filterAll();dc.redrawAll();'
+                  href='javascript:responseChart.filterAll();dc.redrawAll();'
                   style='visibility: hidden;'>reset</a>
-        <div id="response-rowchart"></div>
+
         </div>
 
         <div class="chart dc-chart map-chart" id="map-chart">
@@ -91,10 +91,10 @@
         </div>
 
         <div class="chart dc-chart" id="incident-series">
-          <span>Monthly Series Chart</span>
-                        <a class='reset'
-                          href='javascript:monthlySeries.filterAll();dc.redrawAll();'
-                          style='visibility: hidden;'>reset</a>
+          <span class='series-label'>Monthly Series Chart</span>
+          <a class='reset'
+            href='javascript:monthlySeries.filterAll();dc.redrawAll();'
+            style='visibility: hidden;'>reset</a>
         </div>
 
 

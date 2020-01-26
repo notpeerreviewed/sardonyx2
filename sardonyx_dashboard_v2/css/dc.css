@@ -46,7 +46,8 @@
   shape-rendering: crispEdges; }
 
 .dc-chart .axis text {
-  font: 10px sans-serif; }
+  font: 10px sans-serif;
+}
 
 .dc-chart .grid-line, .dc-chart .axis .grid-line, .dc-chart .grid-line line, .dc-chart .axis .grid-line line {
   fill: none;

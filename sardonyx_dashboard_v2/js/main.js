@@ -163,28 +163,36 @@ console.log(metricsGroup);
 
   /* build row chart for Environments*/
   environmentChart
+    .width(200)
+    .height(150)
+    .margins({top: 0, left: 10, right: 10, bottom: 20})
     .dimension(environmentDimension)
     .group(environmentDimensionGroup)
     .transitionDuration(500)
     .controlsUseVisibility(true)
     .elasticX(true)
     .xAxis()
-    .ticks(5);
+    .ticks(3);
 
 
   /* build row chart for Responses*/
   responseChart
+    .width(150)
+    .height(150)
+    .margins({top: 0, left: 10, right: 10, bottom: 20})
     .dimension(responseDimension)
     .group(responseDimensionGroup)
     .transitionDuration(500)
     .controlsUseVisibility(true)
     .elasticX(true)
     .xAxis()
-    .ticks(5);
+    .ticks(3);
 
 
   /* build line chart for time series*/
   monthlySeries
+    .height(150)
+    .width(900)
     .dimension(monthlyDimension)
     .group(monthlyDimensionGroup)
     .x(d3.scaleTime().domain(d3.extent(data, function(d) {
