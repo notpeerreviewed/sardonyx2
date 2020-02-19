@@ -5,7 +5,7 @@ const dateFormatParser = d3.timeParse(dateFormatSpecifier);
 
 let regionSelector = dc.selectMenu("#region-selector");
 let categoryChart = dc.pieChart('#category-piechart');
-let environmentChart = dc.rowChart('#environment-rowchart');
+let environmentChart = dc.rowChart('#beacons-environment-rowchart');
 let activationChart = dc.rowChart('#activation-rowchart');
 let typeChart = dc.rowChart('#type-rowchart');
 let monthlySeries = dc.lineChart('#incident-series');
@@ -15,15 +15,14 @@ let mapChart = dc_leaflet.markerChart("#map-chart");
 monthlySeries.margins().left = 40;
 
 
-d3.csv('data/beacons_data.csv').then(function (data) {
+d3.csv('../../Portals/4/SARDonyx/data/beacons_data.csv').then(function (data) {
   data.forEach(function (d) {
-        d.ConfirmedLatitude = +d.LocationFindLocationLatitude;
-        d.ConfirmedLongitude = +d.LocationFindLocationLongitude;
+        d.Lat = +d.Lat;
+        d.Long = +d.Long;
         d.date = dateFormatParser(d.date);
         d.date2 = dateFormat(d.date);
         d.month = d3.timeMonth(d.date);
-        d.geo = d.LocationFindLocationLatitude + "," + d.LocationFindLocationLongitude;
-        d.region = d.NAME;
+        d.geo = d.Lat + "," + d.Long;
     });
 
   console.log(data);
@@ -35,7 +34,7 @@ d3.csv('data/beacons_data.csv').then(function (data) {
 
   /* create a dimension for monthly incidents */
   let regionDimension = ndx.dimension(function (d) {
-        return d.region;
+        return d.Region;
     });
 
   let regionDimensionGroup = regionDimension.group();
@@ -58,7 +57,7 @@ d3.csv('data/beacons_data.csv').then(function (data) {
 
   /* create a dimension for Activation reason */
   let activationDimension = ndx.dimension(function (d) {
-        return d.ActivationReason;
+        return d.Activation;
     });
 
   let activationDimensionGroup = activationDimension.group();
@@ -66,7 +65,7 @@ d3.csv('data/beacons_data.csv').then(function (data) {
 
   /* create a dimension for Response type */
   let typeDimension = ndx.dimension(function (d) {
-        return d.BeaconType;
+        return d.Type;
     });
 
   let typeDimensionGroup = typeDimension.group();
@@ -110,14 +109,20 @@ d3.csv('data/beacons_data.csv').then(function (data) {
 
   /* build pie chart for Categories*/
   categoryChart
+    .width(180)
+    .height(180)
     .radius(null)
     .dimension(categoryDimension)
     .group(categoryDimensionGroup)
     .transitionDuration(500)
     .controlsUseVisibility(true);
 
+
+
   /* build row chart for Environments*/
   environmentChart
+    .width(250)
+    .height(200)
     .dimension(environmentDimension)
     .group(environmentDimensionGroup)
     .transitionDuration(500)
@@ -125,18 +130,29 @@ d3.csv('data/beacons_data.csv').then(function (data) {
     .elasticX(true)
     .xAxis().ticks(5);
 
+  environmentChart.margins().left = 15;
+  environmentChart.margins().right = 15;
+
 
   /* build row chart for Responses*/
   activationChart
+    .width(250)
+    .height(200)
     .dimension(activationDimension)
     .group(activationDimensionGroup)
     .transitionDuration(500)
     .controlsUseVisibility(true)
     .elasticX(true)
-    .xAxis().ticks(5);
+    .xAxis().ticks(3);
+
+  activationChart.margins().left = 15;
+  activationChart.margins().right = 20;
+  activationChart.margins().top = 10;
 
   /* build row chart for Responses*/
   typeChart
+    .width(250)
+    .height(200)
     .dimension(typeDimension)
     .group(typeDimensionGroup)
     .transitionDuration(500)
@@ -144,9 +160,14 @@ d3.csv('data/beacons_data.csv').then(function (data) {
     .elasticX(true)
     .xAxis().ticks(5);
 
+  typeChart.margins().left = 15;
+  typeChart.margins().right = 15;
+  typeChart.margins().top = 10;
+
 
   /* build line chart for time series*/
   monthlySeries
+    .height(150)
     .dimension(monthlyDimension)
     .group(monthlyDimensionGroup)
     .x(d3.scaleTime().domain(d3.extent(data, function(d) {
@@ -168,55 +189,55 @@ d3.csv('data/beacons_data.csv').then(function (data) {
 	  .cluster(true)
 	  .filterByArea(true)
 	  .controlsUseVisibility(true)
-    // .icon(function(d) {
-    //           var iconUrl;
-    //           switch(d.value.Environment) {
-    //           case 'Air':
-    //               iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png';
-    //               break;
-    //           case 'Marine':
-    //               iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png';
-    //               break;
-    //           case 'Land':
-    //               iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png';
-    //               break;
-    //           case 'Undetermined':
-    //               iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-grey.png';
-    //               break;
-    //           default:
-    //               iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png';
-    //           }
-    //           return new L.Icon({
-    //               iconUrl: iconUrl,
-    //               shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png'
-    //           });
-    //       });
     .icon(function(d) {
               var iconUrl;
-              switch(d.value.SarCategory) {
-              case 'Cat1':
+              switch(d.value.Environment) {
+              case 'Air':
                   iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png';
                   break;
-              case 'Cat2':
+              case 'Marine':
                   iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png';
+                  break;
+              case 'Land':
+                  iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png';
+                  break;
+              case 'Undetermined':
+                  iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-grey.png';
                   break;
               default:
                   iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png';
               }
               return new L.Icon({
                   iconUrl: iconUrl,
-                  // shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png'
+                  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png'
               });
           });
+    // .icon(function(d) {
+    //           var iconUrl;
+    //           switch(d.value.SarCategory) {
+    //           case 'Cat1':
+    //               iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png';
+    //               break;
+    //           case 'Cat2':
+    //               iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png';
+    //               break;
+    //           default:
+    //               iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png';
+    //           }
+    //           return new L.Icon({
+    //               iconUrl: iconUrl,
+    //               // shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png'
+    //           });
+    //       });
 
   dc.override(mapChart, 'redraw', function() {
           window.setTimeout(() => mapChart._redraw(), 500);
       });
 
   // used to reset the map
-  $("#mapReset").on('click', function() {
-		mapChart.map().setView([-40.77,173.59], 3);
-	 });
+  // $("#mapReset").on('click', function() {
+	// 	mapChart.map().setView([-40.77,173.59], 3);
+	//  });
 
    // date picker function for the sidebar
    $(function() {
@@ -256,7 +277,7 @@ d3.csv('data/beacons_data.csv').then(function (data) {
     // current date filter values in the date picker widgets
     monthlySeries.on("filtered", function(chart){
       let filters = chart.filters();
-      if(filters.length){
+      if(filters.length > 0){
         let range = filters[0];
         $('#datepicker-from').datepicker("setDate", range[0] );
         $('#datepicker-to').datepicker("setDate", range[1] );

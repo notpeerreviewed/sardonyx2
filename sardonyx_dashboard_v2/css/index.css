@@ -7,9 +7,9 @@
   box-sizing: border-box;
 }
 
-html {
+/* html {
   font-size: 62.5%;
-}
+} */
 
 body {
   font-family: sans-serif;
@@ -18,8 +18,8 @@ body {
   line-height: 1.7;
   color: #777;
   padding: 3rem;
-
 }
+
 
 .container {
   display: grid;
@@ -30,31 +30,61 @@ body {
 
 }
 
-.header {
+.dashboard_header {
   display: grid;
   background-color: rgb(36, 98, 170);
   grid-column: 1 / -1;
   grid-row: 1 / 2;
   /* justify-items: start; */
-  font-size: 2rem;
+  grid-template-columns: repeat(3, max-content) 1fr;
+  grid-gap: 1rem;
   color: white;
   margin-bottom: 1rem;
   padding-left: 1rem;
 }
 
- .dashboard {
+.dashboard_header > h1 {
+  color: white;
+  font-size: 2rem;
+  grid-column: 1/-1;
+}
+
+#region-selector {
+  color: white;
+  grid-column: 3/-1;
+}
+#datepicker-from {
+  grid-column: 1/2;
+}
+
+#datepicker-to {
+  grid-column: 2/3;
+}
+
+#district-selector {
+  color: white;
+  grid-column: 3/4;
+}
+
+#area-selector {
+  color: white;
+  grid-column: 4/-1;
+}
+
+.dashboard {
   display: grid;
   grid-row: 2 / -1;
   grid-column: 1 / -1;
   grid-template-rows: repeat(3, min-content);
   grid-template-columns: repeat(2, min-content) 1fr;
   background-color: rgb(73, 97, 131, 0.2);
-  grid-gap: 1.7rem;
+  grid-gap: 1rem;
 }
+
 
 .chart {
   background-color: rgb(155, 163, 167);
-  font-size: 1.7em;
+  font-size: 1rem;
   color: white;
   font-weight: 400;
   border-color: red;
@@ -68,6 +98,8 @@ text.y-axis-label.y-label {fill: white;}
   grid-row: 1 / 2;
   grid-column: 1 / 2;
   padding-left: 1rem;
+  padding-bottom: 0.5rem;
+  align-content: space-between;
 }
 
 /* piechart styling */
@@ -178,4 +210,159 @@ text.y-axis-label.y-label {fill: white;}
 #incident-series svg{
   grid-row: 2/-1;
   grid-column: 1/-1;
+}
+
+
+/* css styling for Beacons page */
+#type-rowchart {
+  display: grid;
+  grid-row: 2 / 3;
+  grid-column: 1 / 2;
+  grid-template-rows: repeat(2, min-content);
+  grid-template-columns: repeat(2, max-content);
+  grid-gap: 1rem;
+
+}
+
+#type-rowchart .type-label{
+  grid-row: 1/2;
+  padding-left: 1rem;
+}
+#type-rowchart .reset{
+  grid-row: 1/2;
+}
+#type-rowchart svg{
+  grid-row: 2/-1;
+  grid-column: 1/-1;
+  justify-self: center;
+}
+
+
+#activation-rowchart {
+  display: grid;
+  grid-row: 2 / 3;
+  grid-column: 2 / 3;
+  grid-template-rows: repeat(2, min-content);
+  grid-template-columns: repeat(2, max-content);
+  grid-gap: 1rem;
+}
+
+#activation-rowchart .activation-label{
+  grid-row: 1/2;
+  padding-left: 1rem;
+}
+#activation-rowchart .reset{
+  grid-row: 1/2;
+}
+#activation-rowchart svg{
+  grid-row: 2/-1;
+  grid-column: 1/-1;
+  justify-self: center;
+}
+
+
+#beacons-environment-rowchart {
+  display: grid;
+  grid-row: 1 / 2;
+  grid-column: 1 / 2;
+  grid-template-rows: repeat(2, min-content);
+  grid-template-columns: repeat(2, max-content);
+
+}
+
+#beacons-environment-rowchart .beacons-environment-label{
+  grid-row: 1/2;
+  padding-left: 1rem;
+}
+#beacons-environment-rowchart .reset{
+  grid-row: 1/2;
+}
+#beacons-environment-rowchart svg{
+  grid-row: 2/-1;
+  grid-column: 1/-1;
+}
+
+
+
+/* Police specific styling */
+.police_dashboard {
+  display: grid;
+  grid-row: 2 / -1;
+  /* grid-column: 1 / -1; */
+  grid-template-rows: repeat(3, min-content);
+  grid-template-columns: repeat(2, max-content) 1fr;
+  background-color: rgb(73, 97, 131, 0.2);
+  grid-gap: 1rem;
+}
+
+/* environment styling */
+#police-environment-rowchart {
+  display: grid;
+  grid-row: 2 / 3;
+  grid-column: 2 / 3;
+  grid-template-rows: repeat(2, min-content);
+  grid-template-columns: repeat(2, max-content);
+  grid-gap: 1rem;
+  padding-left: 1rem;
+  padding-bottom: 1rem;
+  padding-right: 1rem;
+
+}
+
+#police-environment-rowchart .police-environment-rowchart-label{
+  grid-row: 1/2;
+}
+#police-environment-rowchart .reset{
+  grid-row: 1/2;
+}
+#police-environment-rowchart svg{
+  grid-row: 2/-1;
+  grid-column: 1/-1;
+}
+
+/* environment styling */
+#police-assets-rowchart {
+  display: grid;
+  grid-row: 3 / -1;
+  grid-column: 1 / 3;
+  grid-template-rows: repeat(2, min-content);
+  grid-template-columns: repeat(2, max-content);
+  grid-gap: 1rem;
+  padding-left: 1rem;
+  padding-bottom: 1rem;
+  padding-right: 1rem;
+
+}
+
+#police-assets-rowchart .police-assets-rowchart-label{
+  grid-row: 1/2;
+}
+#police-assets-rowchart .reset{
+  grid-row: 1/2;
+}
+#police-assets-rowchart svg{
+  grid-row: 3/-1;
+  grid-column: 1/2;
+}
+
+/* environment styling */
+#police-incident-series {
+  display: grid;
+  grid-row: 3 / -1;
+  grid-column: 3 / -1;
+  grid-template-rows: repeat(2, min-content);
+  grid-template-columns: max-content 1fr;
+  grid-gap: 1rem;
+  padding-left: 1rem;
+  padding-bottom: 1rem;
+
+}
+
+#police-incident-series .series-label{
+  grid-row: 1/2;
+  grid-column: 1/2;
+}
+#police-incident-series .reset{
+  grid-row: 1/2;
+  grid-column: 2/-1;
 }

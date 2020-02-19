@@ -25,36 +25,39 @@ con <- DBI::dbConnect(odbc::odbc(),
                       PWD = "Welc0m3S@rdonyx",
                       Port = 1433)
 
-incidents <- dbGetQuery(con, "SELECT * FROM Incidents")
+incidents <- dbGetQuery(con, "SELECT * FROM DenormalizedIncidents")
 police_districts <- dbGetQuery(con, "SELECT Id, Name FROM PoliceDistricts")
 police_nz_assets <- dbGetQuery(con, "SELECT IncidentId, PoliceAssetId, TotalHours, TotalCost FROM IncidentNzPoliceAssets")
 police_assets <- dbGetQuery(con, "SELECT Id, Name, Cost FROM PoliceAssets")
 
+# need to clean this up to account for the fact we are now using the Denormalised Incident table
+# we may still need to use the old incident table occasionally for the legacy data column
+
 # basic file for overview page
-df <- incidents %>%
-  select(IncidentEnvironmentId, SarCategoryOrNonSarActivityTypeId, ResponseId, NotificationDateTimeUtc,
-         LocationFindLocationLatitude, LocationFindLocationLongitude, LocationIppOrLkpLatitude,
-         LocationIppOrLkpLongitude, LivesSaved, LivesRescued, LivesAssisted, NumberPerishedOrAssumedPerished) %>%
-  mutate(date = as.Date(NotificationDateTimeUtc) %>% as.character(),
-         Environment = case_when(IncidentEnvironmentId == 1 ~ "Air",
-                                 IncidentEnvironmentId == 2 ~ "Land",
-                                 IncidentEnvironmentId == 3 ~ "Marine",
-                                 TRUE ~ "Undetermined"),
-         SarCategory = case_when(SarCategoryOrNonSarActivityTypeId == 1 ~ "Cat1",
-                                 TRUE ~ "Cat2"),
-         Response = case_when(ResponseId == 1 ~ "Communications",
-                              ResponseId == 2 ~ "SAROP",
-                              TRUE ~ "Other"),
-         LocationFindLocationLatitude = case_when(is.na(LocationFindLocationLatitude) ~ LocationIppOrLkpLatitude,
-                                                  TRUE ~ LocationFindLocationLatitude),
-         LocationFindLocationLongitude = case_when(is.na(LocationFindLocationLongitude) ~ LocationIppOrLkpLongitude,
-                                                  TRUE ~ LocationFindLocationLongitude)) %>%
-  # filter(year(date) == 2019) %>%
-  # filter(year(date) == 2019, is.na(LocationFindLocationLongitude)) %>%
-  select(-NotificationDateTimeUtc, -IncidentEnvironmentId, -SarCategoryOrNonSarActivityTypeId, -ResponseId,
-         -LocationIppOrLkpLatitude, -LocationIppOrLkpLongitude) %>%
-  filter(!is.na(LocationFindLocationLongitude) & !is.na(LocationFindLocationLatitude & !is.na(date))) %>%
-  mutate_at(vars(LivesSaved, LivesRescued, LivesAssisted, NumberPerishedOrAssumedPerished), ~ ifelse(is.na(.), 0, .))
+# df <- incidents %>%
+#   select(IncidentEnvironmentId, SarCategoryOrNonSarActivityTypeId, ResponseId, NotificationDateTimeUtc,
+#          LocationFindLocationLatitude, LocationFindLocationLongitude, LocationIppOrLkpLatitude,
+#          LocationIppOrLkpLongitude, LivesSaved, LivesRescued, LivesAssisted, NumberPerishedOrAssumedPerished) %>%
+#   mutate(date = as.Date(NotificationDateTimeUtc) %>% as.character(),
+#          Environment = case_when(IncidentEnvironmentId == 1 ~ "Air",
+#                                  IncidentEnvironmentId == 2 ~ "Land",
+#                                  IncidentEnvironmentId == 3 ~ "Marine",
+#                                  TRUE ~ "Undetermined"),
+#          SarCategory = case_when(SarCategoryOrNonSarActivityTypeId == 1 ~ "Cat1",
+#                                  TRUE ~ "Cat2"),
+#          Response = case_when(ResponseId == 1 ~ "Communications",
+#                               ResponseId == 2 ~ "SAROP",
+#                               TRUE ~ "Other"),
+#          LocationFindLocationLatitude = case_when(is.na(LocationFindLocationLatitude) ~ LocationIppOrLkpLatitude,
+#                                                   TRUE ~ LocationFindLocationLatitude),
+#          LocationFindLocationLongitude = case_when(is.na(LocationFindLocationLongitude) ~ LocationIppOrLkpLongitude,
+#                                                   TRUE ~ LocationFindLocationLongitude)) %>%
+#   # filter(year(date) == 2019) %>%
+#   # filter(year(date) == 2019, is.na(LocationFindLocationLongitude)) %>%
+#   select(-NotificationDateTimeUtc, -IncidentEnvironmentId, -SarCategoryOrNonSarActivityTypeId, -ResponseId,
+#          -LocationIppOrLkpLatitude, -LocationIppOrLkpLongitude) %>%
+#   filter(!is.na(LocationFindLocationLongitude) & !is.na(LocationFindLocationLatitude & !is.na(date))) %>%
+#   mutate_at(vars(LivesSaved, LivesRescued, LivesAssisted, NumberPerishedOrAssumedPerished), ~ ifelse(is.na(.), 0, .))
 
 # still need to manually reformat date to Y-m-d in the csv for some reason
 write.csv(df, file = "data/sardonyx_data.csv", row.names = F)
@@ -62,32 +65,18 @@ write.csv(df, file = "data/sardonyx_data.csv", row.names = F)
 ##############################################################################################
 ##############################################################################################
 
-# beacons data
-beacon_country_codes <- dbGetQuery(con, "SELECT * FROM BeaconCountryCodes")
-beacon_reasons_for_activation <- dbGetQuery(con, "SELECT * FROM BeaconReasonsForActivation")
-beacon_type <- dbGetQuery(con, "SELECT * FROM BeaconTypes")
 
 
 beacons <- incidents %>%
-  select(IncidentEnvironmentId, contains("Beacon"), SarCategoryOrNonSarActivityTypeId,
-         NotificationDateTimeUtc, LocationFindLocationLatitude, LocationFindLocationLongitude) %>%
-  mutate(date = as.Date(NotificationDateTimeUtc) %>% as.character(),
-         Environment = case_when(IncidentEnvironmentId == 1 ~ "Air",
-                                 IncidentEnvironmentId == 2 ~ "Land",
-                                 IncidentEnvironmentId == 3 ~ "Marine",
-                                 TRUE ~ "Undetermined"),
-         SarCategory = case_when(SarCategoryOrNonSarActivityTypeId == 1 ~ "Cat1",
-                                 TRUE ~ "Cat2")) %>%
-  filter(!is.na(LocationFindLocationLongitude) & !is.na(LocationFindLocationLatitude & !is.na(date))) %>%
-  select(-IncidentEnvironmentId, -SarCategoryOrNonSarActivityTypeId, -NotificationDateTimeUtc) %>%
-  left_join(beacon_country_codes[,c("Id", "Name")], by = c("BeaconCountryCodeId" = "Id")) %>%
-  rename(CountryName = Name) %>%
-  left_join(beacon_reasons_for_activation[,c("Id", "Name")], by = c("BeaconReasonForActivationId" = "Id")) %>%
-  rename(ActivationReason = Name) %>%
-  left_join(beacon_type[, c("Id", "Name")], by = c("BeaconTypeId" = "Id")) %>%
-  rename(BeaconType = Name) %>%
-  select(-BeaconCountryCodeId, -BeaconReasonForActivationId, -BeaconTypeId) %>%
-  replace(is.na(.), "Unknown")
+  select(IncidentEnvironmentName, contains("Beacon"), SarCategoryOrNonSarActivityTypeName,
+         NotificationDateTimeUtc, LocationFindLocationLatitude, LocationFindLocationLongitude, LocationIppOrLkpLatitude, LocationIppOrLkpLongitude) %>%
+  filter(!is.na(BeaconTypeName)) %>%
+  mutate(date = as.Date(NotificationDateTimeUtc) %>% floor_date(unit = 'month'),
+         LocationFindLocationLatitude = case_when(is.na(LocationFindLocationLatitude) ~ LocationIppOrLkpLatitude,
+                                                  TRUE ~ LocationFindLocationLatitude),
+         LocationFindLocationLongitude = case_when(is.na(LocationFindLocationLongitude) ~ LocationIppOrLkpLongitude,
+                                                   TRUE ~ LocationFindLocationLongitude)) %>%
+  filter(!is.na(LocationFindLocationLongitude) & !is.na(LocationFindLocationLatitude & !is.na(date)))
 
 # load the regions shapefile
 regional_councils <- st_read("H:/data/regional-councils/nz-regional-councils-2012-yearly-pattern.shp")
@@ -100,7 +89,13 @@ beacons_by_district <- beacons %>%
   st_join(regional_councils["NAME"]) %>%
   mutate(NAME = case_when(is.na(NAME) ~ "Unknown",
                           TRUE ~ NAME)) %>%
-  st_set_geometry(NULL)
+  st_set_geometry(NULL) %>%
+  select(IncidentEnvironmentName, BeaconReasonForActivationName, BeaconTypeName, SarCategoryOrNonSarActivityTypeName,
+         LocationFindLocationLatitude, LocationFindLocationLongitude, date, NAME) %>%
+  mutate(Region = str_replace_all(NAME, " Region", "")) %>%
+  select(-NAME)
+
+colnames(beacons_by_district) <- c("Environment", "Activation", "Type", "SarCategory", "Lat", "Long", "date", "Region")
 
 
 write.csv(beacons_by_district, file = "data/beacons_data.csv", row.names = F)
@@ -184,113 +179,155 @@ test <- police_spatial %>%
 ##############################################################################################
 
 # Harbourmaster Dataset
-incidents <- dbGetQuery(con, "SELECT * FROM Incidents")
-sar_category <- dbGetQuery(con, "SELECT Id, Name FROM SarCategoryOrNonSarActivityTypes")
-responses <- dbGetQuery(con, "SELECT Id, Name FROM Responses")
-activities_water <- dbGetQuery(con, "SELECT Id, Name FROM ActivitiesWater")
-alert_method <- dbGetQuery(con, "SELECT Id, Name FROM AlertMethods")
-causes_of_incident_vessel <- dbGetQuery(con, "SELECT Id, Name FROM CausesOfIncidentVessel")
-root_cause <- dbGetQuery(con, "SELECT Id, Name FROM RootCauses")
+incidents <- dbGetQuery(con, "SELECT * FROM DenormalizedIncidents")
 
-subject_vessels <- dbGetQuery(con, "SELECT * FROM IncidentSubjectVessels")
-non_recreational_vessel_types <- dbGetQuery(con, "SELECT Id, Name FROM NonRecreationalVesselTypes")
-recreational_vessel_types <- dbGetQuery(con, "SELECT Id, Name FROM RecreationalVesselTypes")
-vessel_master_profiles <- dbGetQuery(con, "SELECT Id, Name FROM VesselMasterProfiles")
+legacy_incidents <- dbGetQuery(con, "SELECT * FROM Incidents")
+
+subject_vessels <- dbGetQuery(con, "SELECT * FROM DenormalizedSubjectVessels")
+
 
 # probably best to create a dedicated subjects page
-subject_people <- dbGetQuery(con, "SELECT Id, IncidentId, Age, SexId, EthnicityId FROM IncidentSubjectPeople")
-ethnicities <- dbGetQuery(con, "SELECT Id, Name FROM Ethnicities")
+subject_people <- dbGetQuery(con, "SELECT IncidentId, Age, SexName, EthnicityName FROM DenormalizedSubjectPeople")
 
 # we need to extract the data we require from the incidents table and then augment with the data from
 # associated tables
-df <- incidents %>%
-  # select(Id, Deleted, IncidentEnvironmentId, BeaconActivation, BeaconTypeId, NotificationDateTimeUtc,
-  #        CompletionDateTimeUtc, ResponseId, AlertMethodId, PoliceDistrictId, SarCategoryOrNonSarActivityTypeId,
-  #        ActivityWaterId, CauseOfIncidentVesselId, LocationFindLocationLatitude, LocationFindLocationLongitude,
-  #        RootCauseId,LivesSaved:FatalityAfterSarAlertedId) %>%
-  select(Id, Deleted, IncidentEnvironmentId, NotificationDateTimeUtc,
-         ActivityWaterId, CauseOfIncidentVesselId, LocationFindLocationLatitude, LocationFindLocationLongitude,
-         RootCauseId) %>%
-  filter(IncidentEnvironmentId == 3, Deleted != TRUE) %>%
-  left_join(subject_vessels[,c("IncidentId", "RecreationalVesselTypeId", "NonRecreationalVesselTypeId")], by = c("Id" = "IncidentId")) %>%
-  left_join(recreational_vessel_types, by = c("RecreationalVesselTypeId" = "Id")) %>%
-  rename(RecVessel = Name) %>%
-  left_join(non_recreational_vessel_types, by = c("NonRecreationalVesselTypeId" = "Id")) %>%
-  rename(NonRecVessel = Name)
+incidents <- incidents %>%
+  select(IncidentId, Deleted, IncidentEnvironmentName, contains("Beacon"), NotificationDateTimeUtc, CompletionDateTimeUtc,
+         ResponseName, AlertMethodName, ActivityWaterName, CauseOfIncidentVesselName, contains("Latitude"), contains("Longitude"),
+         RootCauseName, LivesSaved, LivesRescued, LivesAssisted, NumberInParty, NumberPerishedOrAssumedPerished) %>%
+  filter(IncidentEnvironmentName == "Water", Deleted != TRUE) %>%
+  left_join(subject_vessels[,c("IncidentId", "RecreationalVesselTypeName", "NonRecreationalVesselTypeName")], by = "IncidentId") 
 
 
+# now we need to extract the legacy boating informatin from the historical records
+# and map it to the new categories as closely as possible
 
-
-  left_join(activities_water, by = c("ActivityWaterId" = "Id")) %>%
-  rename(WaterActivity = Name) %>%
-  # left_join(alert_method, by = c("AlertMethodId" = "Id")) %>%
-  # rename(AlertMethod = Name) %>%
-  left_join(causes_of_incident_vessel, by = c("CauseOfIncidentVesselId" = "Id")) %>%
-  rename(CauseOfIncident = Name) %>%
-  left_join(root_cause, by = c("RootCauseId" = "Id")) %>%
-  rename(RootCause = Name) %>%
-  left_join(subject_vessels, by = c("Id" = "IncidentId"))
+# function to clean the legacy data column
+clean_legacy_data <- function(data){
+  df <- data %>%
+    str_replace_all("\\{|\\}|\"", '') %>% 
+    str_split(', ') %>% 
+    unlist() %>% 
+    as.data.frame() %>% 
+    separate(., col = ., into = c("key", "value"), sep = ": ") %>%
+    filter(value != "") %>%
+    distinct(key, .keep_all = T)
   
+  return(df)
+}
+
   
-test <- df %>%
-  filter(IncidentEnvironmentId == 3) %>%
-  select(NotificationDateTimeUtc, WaterActivity) %>%
-  mutate(date = as.Date(NotificationDateTimeUtc) %>% floor_date(unit = 'month')) %>%
-  group_by(date) %>%
-  count(WaterActivity) %>%
-  ungroup() %>%
-  filter(date > ymd("2019-05-06"))
+temp <- legacy_incidents %>%
+  filter(str_detect(LegacyData, "Vessel")) %>%
+  mutate(LegacyClean = map(LegacyData, clean_legacy_data)) %>%
+  select(Id, LegacyClean)
+
+vessels <- data.frame()
+
+for(i in 1:nrow(temp)){
+  df <- temp[i,2][[1]] %>%
+    spread(key, value) %>%
+    mutate(Id = temp[i, "Id"])
+  
+  vessels <- bind_rows(vessels, df)
+} 
 
 
-ggplot(test, aes(x = date, y = n)) + geom_line() + facet_wrap(~WaterActivity)
+motors <- c("Outboard", "Single main engine", "Surface Drive", "Jet", "Shafts", "Twin Outboards",  "Twin main engines", "Airboat")
+
+vessel_classifications <- vessels %>%
+  select(Id, Powered, PropulsionType, VesselOwnership, VesselSize, Sailer, SelfPropelled) %>%
+  mutate(NonRecreationalBoating = case_when(VesselOwnership == "Commercial fishing" ~ "Fishing/Trawling Vessel",
+                                            VesselOwnership == "Military" ~ "NZDF Vessel",
+                                            VesselOwnership == "Shipping" ~ "Cargo/Container Vessel",
+                                            VesselOwnership == "Charter" ~ "Passenger Vessel",
+                                            !VesselOwnership %in% c("Private", "Unknown", NA) ~ "Other Commercial Vessel"),
+         RecreationalBoating = case_when(Powered == "PWC/Jet Ski" ~ "Jetski",
+                                         str_detect(SelfPropelled, "Kayak") ~ "Kayak",
+                                         Powered == "Motor sailer" & VesselSize %in% c("0-3", "3-5") ~ "Sailboat less than or equal to 6m",
+                                         Powered == "Motor sailer" & !VesselSize %in% c("0-3", "3-5") ~ "Sailboat over 6m",
+                                         Powered %in% c("Runabout", "Launch", "Power vessel RHIB") & 
+                                           VesselSize %in% c("0-3", "3-5") ~ "Power Boat less than or equal to 6m",
+                                         Powered %in% c("Runabout", "Launch", "Power vessel RHIB") & 
+                                           !VesselSize %in% c("0-3", "3-5") ~ "Power Boat over 6m",
+                                         Powered %in% c("Other", NA) & 
+                                           PropulsionType %in% motors &
+                                           VesselSize %in% c("0-3", "3-5") ~ "Power Boat less than or equal to 6m",
+                                         Powered %in% c("Other", NA) & 
+                                           PropulsionType %in% motors &
+                                           !VesselSize %in% c("0-3", "3-5") ~ "Power Boat over 6m",
+                                         SelfPropelled == "Rowing dinghy" | Sailer == "Sailing Dinghy" ~ "Dinghy",
+                                         str_detect(Sailer, "Yacht") & 
+                                           VesselSize %in% c("0-3", "3-5") ~ "Sailboat less than or equal to 6m",
+                                         str_detect(Sailer, "Yacht") & 
+                                           !VesselSize %in% c("0-3", "3-5") ~ "Sailboat over 6m",
+                                         TRUE ~ "Other")) %>%
+  mutate(RecreationalBoating = ifelse(!is.na(NonRecreationalBoating), NA, RecreationalBoating)) %>%
+  select(Id, NonRecreationalBoating, RecreationalBoating)
+
+
+test <- incidents %>%
+  left_join(vessel_classifications, by = c("IncidentId" = "Id"))
 
 
 
-
+##############################################################################################
+##############################################################################################
 
 incidents <- dbGetQuery(con, "SELECT * FROM DenormalizedIncidents")
-vessels <- dbGetQuery(con, "SELECT * FROM DenormalizedSubjectVessels")
+resources <- dbGetQuery(con, "SELECT * FROM Resources")
+assets <- dbGetQuery(con, "SELECT * FROM Assets")
 
-# db <- odbcConnect("nzsar")
-# # test <- sqlTables(db)
-# 
-# # get the old police event records
-# sql="SELECT * FROM Landing.Vessel"
-# landing_vessel <- sqlQuery(db,sql)
-# 
-# df2 <- landing_vessel %>% distinct()
-# 
-# unique(df2$SelfPropelled)
+police_areas_spatial <- st_read("H:/data/police_area_boundaries/nz-police-area-boundaries.shp")
 
-# 
-# # get the assets used in the old records
-# sql="SELECT EventID, RecordType, AdminHrs, AdminCost FROM Staging.vwStaging_Admin"
-# police_assets_old <- sqlQuery(db,sql)
-# 
-# police_assets_old_reduced <- police_assets_old %>%
-#   filter(RecordType != "Total") %>%
-#   left_join(police_incidents_old, by = "EventID") %>%
-#   mutate(Event = toupper(Event)) %>%
-#   filter(!is.na(Event))
-# 
-# # now join the old police records to the new SARdonyx records
-# # using Police Event number as the key
-# full_records <- police_spatial %>%
-#   mutate(PoliceEventNumber = toupper(PoliceEventNumber)) %>%
-#   left_join(police_assets_old_reduced, by = c("PoliceEventNumber" = "Event")) %>%
-#   mutate(RecordType = case_when(is.na(RecordType) ~ AssetName,
-#                                 RecordType == "Police heli" & AssetName == "Police Eagle Helicopter" ~ "Police Eagle Helicopter",
-#                                 TRUE ~ RecordType),
-#          AdminHrs = case_when(is.na(AdminHrs) ~ TotalHours,
-#                               TRUE ~ AdminHrs),
-#          AdminCost = case_when(RecordType == "Police Eagle Helicopter" ~ Cost,
-#                                RecordType == "Other" ~ 0,
-#                                is.na(AdminCost) ~ Cost,
-#                                TRUE ~ AdminCost)) %>%
-#   select(-EventID, -PoliceAssetId, -TotalHours, -Cost) %>%
-#   distinct() %>%
-#   mutate(TotalCost = AdminCost) %>%
-#   select(-Id:-PoliceDistrictId) 
+
+resources_tidy <- resources %>%
+  select(-contains("Unit"))
+
+assets_tidy <- assets %>%
+  select(-contains("Asset")) %>%
+  rename(Asset_Source = Source,
+         Asset_Name = Name,
+         Asset_Hours = TotalHours,
+         Asset_Cost = TotalCost)
+
+df <- incidents %>%
+  filter(!Deleted) %>%
+  select(IncidentId, PoliceEventNumber, IncidentEnvironmentName, NotificationDateTimeUtc, CompletionDateTimeUtc,
+         ResponseName, LocationIppOrLkpLatitude, LocationIppOrLkpLongitude,
+         LocationFindLocationLatitude, LocationFindLocationLongitude, LivesSaved:LivesAssisted, NumberPerishedOrAssumedPerished) %>%
+  mutate(NotificationDateTimeUtc = ymd_hms(NotificationDateTimeUtc),
+         CompletionDateTimeUtc = ymd_hms(CompletionDateTimeUtc),
+         Date = NotificationDateTimeUtc %>% floor_date(unit = 'month'),
+         Duration = difftime(CompletionDateTimeUtc, NotificationDateTimeUtc, units = "hours", signif(., 3)) %>% as.numeric(),
+         LocationFindLocationLatitude = case_when(is.na(LocationFindLocationLatitude) ~ LocationIppOrLkpLatitude,
+                                                  TRUE ~ LocationFindLocationLatitude),
+         LocationFindLocationLongitude = case_when(is.na(LocationFindLocationLongitude) ~ LocationIppOrLkpLongitude,
+                                                   TRUE ~ LocationFindLocationLongitude)) %>%
+  select(-LocationIppOrLkpLatitude, -LocationIppOrLkpLongitude) %>%
+  replace_na(list(LocationFindLocationLatitude = 0,
+                  LocationFindLocationLongitude = 0)) %>%
+  filter(ResponseName == "SAROP conducted", !is.na(PoliceEventNumber), abs(LocationFindLocationLatitude) < 90) %>%
+  left_join(resources_tidy, by = "IncidentId") %>%
+  left_join(assets_tidy, by = "IncidentId") %>%
+  st_as_sf(coords = c("LocationFindLocationLongitude", "LocationFindLocationLatitude"), remove = F) %>%
+  st_set_crs(4326) %>%
+  st_join(police_areas_spatial[,c("AREA_NAME", "DISTRICT_N", "geometry")]) %>%
+  mutate(Duration = case_when(Duration < 0 ~ 0,
+                              TRUE ~ Duration))
+
+
+write.csv(df, file = "data/police_resources.csv", row.names = F)
+
+
+
+# ggplot(df, aes(x = Duration)) +
+#   geom_density() +
+#   scale_x_continuous(trans = "log10", labels = scales::comma_format(accuracy = 0.01))
+
+
+
+
 
 
 httw()
